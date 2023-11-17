@@ -117,7 +117,8 @@
       "pages": [
         "api-reference/integration-guides/python-text-to-speech-guide",
         "api-reference/integration-guides/react-text-to-speech-guide",
-        "api-reference/integration-guides/gaming-text-to-speech-guide"
+        "api-reference/integration-guides/gaming-text-to-speech-guide",
+        "api-reference/integration-guides/text-to-speech-latency-guide"
       ]
     },
     {
