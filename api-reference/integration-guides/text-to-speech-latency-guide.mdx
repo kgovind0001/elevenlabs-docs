@@ -2,9 +2,9 @@
 title: "Text-to-Speech Latency Guide"
 description: "Explore methods to improve the latency of text-to-speech synthesis for your applications applications with ElevenLabs' developer guide."
 ---
-We provide here seven methods for reducing streaming latency, in order of highest to lowest effectiveness:
+We provide here several methods for reducing streaming latency, in order of highest to lowest effectiveness:
 
-- **Use Turbo v2 model (recommended)** – 
+- **(1). Use Turbo v2 model (recommended)** – 
 Our cutting-edge Eleven [Turbo v2](https://elevenlabs.io/docs/speech-synthesis/models#turbo-v2) is ideally suited for tasks demanding extremely low latency. The model is found to have a latency of  around 400ms consistently to help you build amazing real life applications. 
 
 ```python
@@ -20,3 +20,33 @@ audio = generate(
 # Stream the audio directly 
 stream(audio)
 ```
+
+- **(2). Use the streaming API** –
+ElevenLabs provides three text-to-speech endpoints: 
+(i). [a regular text-to-speech endpoint](https://elevenlabs.io/docs/api-reference/text-to-speech): It is a regular endpoint and renders the audio file before returning it in the response
+(ii). [a text-to-speech streaming endpoint](https://elevenlabs.io/docs/api-reference/text-to-speech-stream): The streaming endpoint streams back the audio as it is being generated, resulting in much lower response time from request to first byte of audio received. For applications that require low latency, the streaming endpoint is therefore recommended.
+(iii). [a text-to-speech websockets endpoint](https://elevenlabs.io/docs/api-reference/text-to-speech-websockets): For applications where the text prompts can be streamed to the text-to-speech endpoints (such as LLM output), this allows for prompts to be fed to the endpoint while the speech is being generated. You can also configure the streaming chunk size when using the websocket, with smaller chunks generally rendering faster. As such, we recommend sending content word by word, our model and tooling leverages context to ensure that sentence structure and more are persisted to the generated audio even if we only receive a word at a time. 
+
+
+- **(3). Increase the optimize_streaming_latency query parameter** –
+This query parameter for the streaming and websockets endpoints configure the rendering process to trade off some audio quality in favor of reduced latency.
+
+
+- **(4). If you are a business, consider upgrading to an Enterprise plan** –
+Enterprise customers receive top priority in the rendering queue, which ensures that they always experience the lowest possible latency, regardless of model usage load.
+
+
+- **(5). Use Premade and Synthetic Voices rather than Voice Clones** –
+Premade and Synthetic voices generate speech faster than instant voice clones. Professional Voice Clones have the highest latency of all voice types, and are not recommended for low latency applications.
+
+
+- **(6). Reuse HTTPS Sessions When Streaming** –
+When streaming through the websocket, reusing an established SSL/TLS session helps reduce latency by skipping the handshake process. This improves latency for all requests after the session’s first.
+
+
+- **(7). Limit the Number of Websocket Connection Closures** –
+Similarly, for websockets we leverage the WSS protocol and so an SSL/TLS handshake takes place at the beginning of a connection, which adds overhead. As such, we recommend to limit the number of times a connection is closed and reopened to the extent possible.
+
+
+- **(8). Leverage Servers Closer to the US** –
+Today, our APIs are served from the US, and as such users may experience latency from increased network routing when communicating with these APIs outside of the United States.
