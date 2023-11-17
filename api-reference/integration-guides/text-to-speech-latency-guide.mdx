@@ -2,3 +2,21 @@
 title: "Text-to-Speech Latency Guide"
 description: "Explore methods to improve the latency of text-to-speech synthesis for your applications applications with ElevenLabs' developer guide."
 ---
+We provide here seven methods for reducing streaming latency, in order of highest to lowest effectiveness:
+
+- **Use Turbo v2 model (recommended)** – 
+Our cutting-edge Eleven [Turbo v2](https://elevenlabs.io/docs/speech-synthesis/models#turbo-v2) is ideally suited for tasks demanding extremely low latency. The model is found to have a latency of  around 400ms consistently to help you build amazing real life applications. 
+
+```python
+from elevenlabs import generate, stream
+
+audio = generate(
+    text="Hi! My name is Bella, nice to meet you!",
+    voice="Bella",
+    model='eleven_turbo_v2',
+    stream=True
+)
+
+# Stream the audio directly 
+stream(audio)
+```
