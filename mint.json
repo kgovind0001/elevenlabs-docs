@@ -96,48 +96,8 @@
       "group": "Text to Speech",
       "pages": [
         "api-reference/text-to-speech",
-<<<<<<< HEAD
-        "api-reference/text-to-speech-stream",
-        "api-reference/text-to-speech-websockets"
-      ]
-    },
-    {
-      "group": "Integration Guides",
-      "pages": [
-        "api-reference/integration-guides/python-text-to-speech-guide",
-        "api-reference/integration-guides/react-text-to-speech-guide",
-        "api-reference/integration-guides/gaming-text-to-speech-guide",
-        "api-reference/integration-guides/text-to-speech-latency-guide"
-      ]
-    },
-    {
-      "group": "Models",
-      "pages": [
-        "api-reference/models-get"
-      ]
-    },
-    {
-      "group": "Voices",
-      "pages": [
-        "api-reference/voices",
-        "api-reference/voices-settings-default",
-        "api-reference/voices-settings",
-        "api-reference/voices-settings-edit",
-        "api-reference/voices-get",
-        "api-reference/voices-add",
-        "api-reference/voices-edit",
-        "api-reference/voices-delete"
-      ]
-    },
-    {
-      "group": "Samples",
-      "pages": [
-        "api-reference/samples-get",
-        "api-reference/samples-delete"
-=======
         "api-reference/streaming",
         "api-reference/websockets"
->>>>>>> main
       ]
     },
     {
@@ -212,7 +172,8 @@
       "pages": [
         "api-reference/python-text-to-speech-guide",
         "api-reference/react-text-to-speech-guide",
-        "api-reference/gaming-text-to-speech-guide"
+        "api-reference/gaming-text-to-speech-guide",
+        "api-reference/text-to-speech-latency-guide"
       ]
     }
   

@@ -1,21 +1,25 @@
 ---
 title: "Text-to-Speech Latency Guide"
-description: "Explore methods to improve the latency of text-to-speech synthesis for your applications applications with ElevenLabs' developer guide."
+description: "Explore methods to improve the latency of text-to-speech synthesis for your applications with ElevenLabs' developer guide."
 ---
+# Latency optmization methods
 We provide here several methods for reducing streaming latency, in order of highest to lowest effectiveness:
 
-- **(1). Use Turbo v2 model (recommended)** – 
+#### (1). Use Turbo v2 model (recommended)
 Our cutting-edge Eleven [Turbo v2](https://elevenlabs.io/docs/speech-synthesis/models#turbo-v2) is ideally suited for tasks demanding extremely low latency. The model is found to have a latency of  around 400ms consistently to help you build amazing real life applications. 
 
 
-- **(2). Use the streaming API** –
-ElevenLabs provides three text-to-speech endpoints:\
-(i). [a regular text-to-speech endpoint](https://elevenlabs.io/docs/api-reference/text-to-speech): It is a regular endpoint and renders the audio file before returning it in the response.\ 
-(ii). [a text-to-speech streaming endpoint](https://elevenlabs.io/docs/api-reference/text-to-speech-stream): The streaming endpoint streams back the audio as it is being generated, resulting in much lower response time from request to first byte of audio received. For applications that require low latency, the streaming endpoint is therefore recommended.\
+#### (2). Use the streaming API 
+ElevenLabs provides three text-to-speech endpoints:
+\
+(i). [a regular text-to-speech endpoint](https://elevenlabs.io/docs/api-reference/text-to-speech): It is a regular endpoint and renders the audio file before returning it in the response.
+\
+(ii). [a text-to-speech streaming endpoint](https://elevenlabs.io/docs/api-reference/text-to-speech-stream): The streaming endpoint streams back the audio as it is being generated, resulting in much lower response time from request to first byte of audio received. For applications that require low latency, the streaming endpoint is therefore recommended.
+\
 (iii). [a text-to-speech websockets endpoint](https://elevenlabs.io/docs/api-reference/text-to-speech-websockets): For applications where the text prompts can be streamed to the text-to-speech endpoints (such as LLM output), this allows for prompts to be fed to the endpoint while the speech is being generated. You can also configure the streaming chunk size when using the websocket, with smaller chunks generally rendering faster. As such, we recommend sending content word by word, our model and tooling leverages context to ensure that sentence structure and more are persisted to the generated audio even if we only receive a word at a time. 
 
 
-- **(3). Increase the optimize_streaming_latency query parameter** –
+#### (3). Increase the optimize_streaming_latency query parameter 
 To reduce the latency of first-audio-byte down to 850ms (from the US), add the optimize_streaming_latency=[optimization_level] query parameter to your streaming TTS endpoint.
 The optimization_level must be an integer from 0 to 4.\
 0 (default) = No optimization.\
@@ -40,21 +44,154 @@ audio = generate(
 stream(audio)
 ```
 
-- **(4). If you are a business, consider upgrading to an [Enterprise plan](https://elevenlabs.io/subscription)** –
+#### (4). If you are a business, consider upgrading to an [Enterprise plan](https://elevenlabs.io/subscription) 
 Enterprise customers receive top priority in the rendering queue, which ensures that they always experience the lowest possible latency, regardless of model usage load.
 
 
-- **(5). Use Premade and Synthetic Voices rather than Voice Clones** –
+#### (5). Use Premade and Synthetic Voices rather than Voice Clones 
 Premade and Synthetic voices generate speech faster than instant voice clones. Professional Voice Clones have the highest latency of all voice types, and are not recommended for low latency applications. Please have a look at to get all the [available voices](https://elevenlabs.io/docs/api-reference/voices) and you may choose one which fits your needs and requirements. 
 
 
-- **(6). Reuse HTTPS Sessions When Streaming** –
+#### (6). Reuse HTTPS Sessions When Streaming 
 When streaming through the websocket, reusing an established SSL/TLS session helps reduce latency by skipping the handshake process. This improves latency for all requests after the session’s first.
 
 
-- **(7). Limit the Number of Websocket Connection Closures** –
+#### (7). Limit the Number of Websocket Connection Closures 
 Similarly, for websockets we leverage the WSS protocol and so an SSL/TLS handshake takes place at the beginning of a connection, which adds overhead. As such, we recommend to limit the number of times a connection is closed and reopened to the extent possible.
 
 
-- **(8). Leverage Servers Closer to the US** –
+#### (8). Leverage Servers Closer to the US 
 Today, our APIs are served from the US, and as such users may experience latency from increased network routing when communicating with these APIs outside of the United States.
+
+# Example of voice streaming using ElevenLabs and ChatGPT with some optimization measures to improve the latency. 
+
+```python
+import asyncio
+import websockets
+import json
+import openai
+import base64
+import shutil
+import os
+import subprocess
+
+# Define API keys and voice ID
+OPENAI_API_KEY = '<OPENAI_API_KEY>'
+ELEVENLABS_API_KEY = '<ELEVENLABS_API_KEY>'
+# optimization: Using one of the premade voice. 
+VOICE_ID = '21m00Tcm4TlvDq8ikWAM'
+
+# Set OpenAI API key
+openai.api_key = OPENAI_API_KEY
+
+
+def is_installed(lib_name):
+    return shutil.which(lib_name) is not None
+
+
+async def text_chunker(chunks):
+    """Split text into chunks, ensuring to not break sentences."""
+    splitters = (".", ",", "?", "!", ";", ":", "—", "-", "(", ")", "[", "]", "}", " ")
+    buffer = ""
+
+    async for text in chunks:
+        if buffer.endswith(splitters):
+            yield buffer + " "
+            buffer = text
+        elif text.startswith(splitters):
+            yield buffer + text[0] + " "
+            buffer = text[1:]
+        else:
+            buffer += text
+
+    if buffer:
+        yield buffer + " "
+
+
+async def stream(audio_stream):
+    """Stream audio data using mpv player."""
+    if not is_installed("mpv"):
+        raise ValueError(
+            "mpv not found, necessary to stream audio. "
+            "Install instructions: https://mpv.io/installation/"
+        )
+
+    mpv_process = subprocess.Popen(
+        ["mpv", "--no-cache", "--no-terminal", "--", "fd://0"],
+        stdin=subprocess.PIPE, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
+    )
+
+    print("Started streaming audio")
+    async for chunk in audio_stream:
+        if chunk:
+            mpv_process.stdin.write(chunk)
+            mpv_process.stdin.flush()
+
+    if mpv_process.stdin:
+        mpv_process.stdin.close()
+    mpv_process.wait()
+
+
+async def text_to_speech_input_streaming(voice_id, text_iterator):
+    """Send text to ElevenLabs API and stream the returned audio."""
+    # optimization: Using websockets to stream the audio. 
+    # optmization: Using fastest eleven_turbo_v2 model which is optimized for lowest latency compared to other models 
+    # optimization: We also turn on latency optimizations at some cost of quality. A value of 3 gives quite decent results. 
+    uri = f"wss://api.elevenlabs.io/v1/text-to-speech/{voice_id}/stream-input?model_id=eleven_turbo_v2&optimize_streaming_latency=3"
+
+    async with websockets.connect(uri) as websocket:
+        await websocket.send(json.dumps({
+            "text": " ",
+            "voice_settings": {"stability": 0.5, "similarity_boost": True},
+            "xi_api_key": ELEVENLABS_API_KEY,
+        }))
+
+        async def listen():
+            """Listen to the websocket for audio data and stream it."""
+            while True:
+                try:
+                    message = await websocket.recv()
+                    data = json.loads(message)
+                    if data.get("audio"):
+                        yield base64.b64decode(data["audio"])
+                    elif data.get('isFinal'):
+                        break
+                except websockets.exceptions.ConnectionClosed:
+                    print("Connection closed")
+                    break
+
+        listen_task = asyncio.create_task(stream(listen()))
+
+        async for text in text_chunker(text_iterator):
+            await websocket.send(json.dumps({"text": text, "try_trigger_generation": True}))
+
+        await websocket.send(json.dumps({"text": ""}))
+
+        await listen_task
+
+
+async def chat_completion(query):
+    """Retrieve text from OpenAI and pass it to the text-to-speech function."""
+    response = await openai.ChatCompletion.acreate(
+        model='gpt-4', messages=[{'role': 'user', 'content': query}],
+        temperature=1, stream=True
+    )
+
+    async def text_iterator():
+        async for chunk in response:
+            delta = chunk['choices'][0]["delta"]
+            if 'content' in delta:
+                yield delta["content"]
+            else:
+                break
+
+    await text_to_speech_input_streaming(VOICE_ID, text_iterator())
+
+
+# Main execution
+if __name__ == "__main__":
+    user_query = "Hello, tell me a very long story."
+    asyncio.run(chat_completion(user_query))
+
+
+```
