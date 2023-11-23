@@ -28,11 +28,6 @@
       "url": "api-reference"
     },
     {
-      "name": "API Playground",
-      "icon": "circle-play",
-      "url": "https://api.elevenlabs.io/docs"
-    },
-    {
       "name": "Python Library",
       "icon": "python",
       "url": "https://github.com/elevenlabs/elevenlabs-python"
@@ -40,13 +35,13 @@
     {
       "name": "Community",
       "icon": "discord",
-      "url": "https://discord.gg/ZcPfAy3xSE"
+      "url": "https://discord.gg/elevenlabs"
     }
   ],
   "navigation": [
     {
       "group": "",
-      "pages": ["introduction", "getting-started"]
+      "pages": ["introduction"]
     },
     {
       "group": "VoiceLab",
@@ -98,16 +93,10 @@
       ]
     },
     {
-      "group": "",
-      "pages": [
-        "api-reference/introduction",
-        "api-reference/authentication"
-      ]
-    },
-    {
       "group": "Text to Speech",
       "pages": [
         "api-reference/text-to-speech",
+<<<<<<< HEAD
         "api-reference/text-to-speech-stream",
         "api-reference/text-to-speech-websockets"
       ]
@@ -145,30 +134,93 @@
       "pages": [
         "api-reference/samples-get",
         "api-reference/samples-delete"
+=======
+        "api-reference/streaming",
+        "api-reference/websockets"
+>>>>>>> main
       ]
     },
     {
       "group": "History",
       "pages": [
-        "api-reference/history",
-        "api-reference/history-item-get",
-        "api-reference/history-audio",
-        "api-reference/history-delete",
-        "api-reference/history-download"
+        "api-reference/get-generated-items",
+        "api-reference/get-history-item-by-id",
+        "api-reference/delete-history-item",
+        "api-reference/get-audio-from-history-item",
+        "api-reference/download-history-items"
+      ]
+    },
+    {
+      "group": "Samples",
+      "pages": [
+        "api-reference/delete-sample",
+        "api-reference/get-audio-from-sample"
       ]
     },
     {
       "group": "User",
       "pages": [
-        "api-reference/user",
-        "api-reference/user-subscription"
+        "api-reference/get-user-subscription-info",
+        "api-reference/get-user-info"
+      ]
+    },
+    {
+      "group": "Voices",
+      "pages": [
+        "api-reference/get-voices",
+        "api-reference/get-default-voice-settings",
+        "api-reference/get-voice-settings",
+        "api-reference/get-voice",
+        "api-reference/delete-voice",
+        "api-reference/edit-voice-settings",
+        "api-reference/add-voice",
+        "api-reference/edit-voice"
+      ]
+    },
+    {
+      "group": "Projects",
+      "pages": [
+        "api-reference/get-projects",
+        "api-reference/get-project-by-id",
+        "api-reference/add-project",
+        "api-reference/delete-project",
+        "api-reference/convert-project",
+        "api-reference/get-project-snapshots",
+        "api-reference/stream-project-audio",
+        "api-reference/get-chapters",
+        "api-reference/get-chapter-by-id",
+        "api-reference/delete-chapter",
+        "api-reference/convert-chapter",
+        "api-reference/get-chapter-snapshots",
+        "api-reference/stream-chapter-audio"
+      ]
+    },
+    {
+      "group": "Models",
+      "pages": [
+        "api-reference/get-models"
+      ]
+    },
+    {
+      "group": "Audio-native",
+      "pages": [
+        "api-reference/creates-audionative-enabled-project"
+      ]
+    },
+    {
+      "group": "Integration Guides",
+      "pages": [
+        "api-reference/python-text-to-speech-guide",
+        "api-reference/react-text-to-speech-guide",
+        "api-reference/gaming-text-to-speech-guide"
       ]
     }
+  
   ],
   "api": {
     "baseUrl": "https://api.elevenlabs.io",
     "playground": {
-      "mode": "simple"
+      "mode": "show"
     }
   },
   "footerSocials": {
